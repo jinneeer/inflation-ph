@@ -12,6 +12,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
+from app.config import settings
 from app.db import query
 from app.services.models import WEIGHTS
 
@@ -23,7 +24,7 @@ class ForecastParams:
     d: int = 1
     q: int = 1
     P: int = 1
-    D: int = 0
+    D: int = 1
     Q: int = 0
     trend: str = "add"
     seasonal: str = "add"
@@ -34,8 +35,9 @@ class ForecastParams:
     shock_start: int = 1
 
 
-def national_cpi() -> pd.DataFrame:
-    return pd.DataFrame(query("headline", ["1958-01-01", "2026-10-01"]).rows)[["date", "cpi"]]
+def national_cpi(start: str | None = None) -> pd.DataFrame:
+    """National CPI used to fit the models (default: 2018-base era, see settings.fit_start)."""
+    return pd.DataFrame(query("headline", [start or settings.fit_start, "2026-10-01"]).rows)[["date", "cpi"]]
 
 
 def _weight(node: str) -> float:

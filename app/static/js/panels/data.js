@@ -26,13 +26,21 @@ function drawRegionTable(rows, state) {
 
 function drawMetrics(m) {
   const table = $("#metricsTable");
+  const f = (v, d = 2) => (v == null ? "—" : Number(v).toFixed(d));
+  const pf = m.nowcast?.folds?.slice(-1)[0]?.regression || {};
+  const carry = pf["Persistence (this month carried forward)"], dep = m.gbm;
+  const nat = m.national_rolling?.mean || {};
+  const iv = m.nowcast?.interval || {};
   const rows = [
-    ["SARIMA average / RMS error (MAE / RMSE)", `${m.backtest?.[1]?.MAE?.toFixed(2) ?? "—"} / ${m.backtest?.[1]?.RMSE?.toFixed(2) ?? "—"}`],
-    ["Holt-Winters average / RMS error (MAE / RMSE)", `${m.backtest?.[0]?.MAE?.toFixed(2) ?? "—"} / ${m.backtest?.[0]?.RMSE?.toFixed(2) ?? "—"}`],
-    ["Regional estimate: avg / RMS error / R²", `${m.gbm?.MAE?.toFixed(2)} / ${m.gbm?.RMSE?.toFixed(2)} / ${m.gbm?.R2?.toFixed(2)}`],
-    ["Risk model ranking / precision score (AUC / AP)", `${m.classifier?.AUC?.toFixed(3)} / ${m.classifier?.average_precision?.toFixed(3)}`],
-    ["Risk model precision @ 0.50", m.classifier?.precision?.toFixed(2)],
-    ["Test window", "Nov 2025 – Oct 2026"],
+    ["National SARIMA, avg / RMS miss, 4-window mean (pts)", `${f(nat.SARIMA?.MAE)} / ${f(nat.SARIMA?.RMSE)}`],
+    ["National Holt-Winters, avg / RMS miss, 4-window mean", `${f(nat["Holt-Winters"]?.MAE)} / ${f(nat["Holt-Winters"]?.RMSE)}`],
+    ["National SARIMA 95% band: share of months inside", f(nat.SARIMA?.coverage95)],
+    ["Regional next month: simple guess (this month), avg / RMS miss", `${f(carry?.MAE)} / ${f(carry?.RMSE)}`],
+    ["Regional next month: boosted-trees model, avg / RMS miss / R²", `${f(dep?.MAE)} / ${f(dep?.RMSE)} / ${f(dep?.R2)}`],
+    ["Regional guess range: share of cases inside 80% / 95%", `${f(iv.coverage80_primary)} / ${f(iv.coverage95_primary)}`],
+    ["Above-4% model: ranking score AUC / average precision", `${f(m.classifier?.AUC, 3)} / ${f(m.classifier?.average_precision, 3)}`],
+    ["Above-4% simple rule (this month > 4%): AUC", f(m.classifier_baseline?.AUC, 3)],
+    ["Main test window", m.nowcast?.primary_window ?? "—"],
     ["Series", `${m.series_start?.slice(0, 10)} to ${m.series_end?.slice(0, 10)}, n = ${m.n_obs}`],
     ["Trained at", m.trained_at],
   ];

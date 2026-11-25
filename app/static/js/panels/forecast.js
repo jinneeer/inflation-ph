@@ -1,6 +1,6 @@
 /* Forecast tab: live SARIMA/ETS fits with scenario controls and fan chart. */
 import { post, get } from "../api.js";
-import { C, baseLayout, config, $, csvDownload, monthLabel } from "./common.js";
+import { C, baseLayout, config, $, $$, csvDownload, monthLabel } from "./common.js";
 
 let last = null;
 
@@ -23,6 +23,19 @@ export async function initForecast(meta) {
   horizon.addEventListener("input", () => { $("#fcHorizonVal").textContent = horizon.value; });
   shock.addEventListener("input", () => { $("#fcShockVal").textContent = shock.value; });
   $("#fcRun").addEventListener("click", () => run());
+  $$("#fcPresets [data-preset]").forEach((b) => b.addEventListener("click", () => {
+    const [code, pct] = b.dataset.preset.split(":");
+    if (![...nodeSel.options].some((o) => o.value === code)) return;
+    nodeSel.value = code;
+    shock.value = pct;
+    $("#fcShockVal").textContent = pct;
+    run();
+  }));
+  $("#fcAdvReset").addEventListener("click", () => {
+    Object.entries({ fcP: 1, fcD: 1, fcQ: 1, fcSP: 1, fcSD: 1, fcSQ: 0 }).forEach(([id, v]) => { $(`#${id}`).value = v; });
+    $("#fcTrend").value = "add"; $("#fcSeasonal").value = "add"; $("#fcDamped").checked = true;
+    run();
+  });
   $("#fcCsvBtn").addEventListener("click", () => {
     if (!last) return;
     const rows = last.data.flatMap((p) => p.rows.map((r) => ({ model: p.model, ...r })));
@@ -60,6 +73,9 @@ export async function run(state) {
     shock_node: $("#fcNode").value || null,
     shock_pct: Number($("#fcShock").value),
     shock_start: Number($("#fcShockStart").value),
+    p: Number($("#fcP").value), d: Number($("#fcD").value), q: Number($("#fcQ").value),
+    P: Number($("#fcSP").value), D: Number($("#fcSD").value), Q: Number($("#fcSQ").value),
+    trend: $("#fcTrend").value, seasonal: $("#fcSeasonal").value, damped: $("#fcDamped").checked,
   };
   const btn = $("#fcRun");
   btn.disabled = true;

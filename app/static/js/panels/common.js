@@ -52,3 +52,20 @@ export function csvDownload(filename, rows) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+// Plain-language names for model inputs (the model itself uses the short codes).
+export const FEATURE_LABELS = {
+  infl: "This month's rate", lag1: "1 month ago", lag2: "2 months ago", lag3: "3 months ago",
+  lag6: "6 months ago", lag12: "12 months ago", ma3: "3-month average", ma6: "6-month average",
+  ma12: "12-month average", vol12: "How bumpy (12 mo)", month_sin: "Time of year (a)",
+  month_cos: "Time of year (b)", time_idx: "Years since 2019",
+};
+export const featureLabel = (f) => FEATURE_LABELS[f] || f;
+
+export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+export function shortRegion(geo) {
+  const [head, tail = ""] = String(geo).split(" (");
+  const t = tail.replace(")", "");
+  return t && t === t.toUpperCase() && t.length <= 6 ? t : head;
+}

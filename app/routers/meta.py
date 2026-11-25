@@ -26,10 +26,17 @@ def meta():
             (w["commodity_code"].astype(str) != "0")]
     sectors = [{"code": str(r.commodity_code), "name": r.commodity.title()}
                for r in top.itertuples()]
-    nodes = w[w["commodity_code"].astype(str).str.count(r"\.") >= 1].head(40)
-    shock_nodes = [{"code": str(r.commodity_code), "name": r.commodity.title(),
-                    "weight": round(float(r.weight_pct), 3)}
-                   for r in nodes.itertuples()]
+    # everyday items first, so a non-technical user can try "what if fuel or rice rises?" at once
+    curated = {"07.2.2": "Fuel for vehicles", "04.5.1": "Electricity", "04.5.2.2": "Cooking gas (LPG)",
+               "01.1.1.12": "Rice", "01.1.2.2": "Meat", "01.1.3.1": "Fish", "01.1": "All food"}
+    codes = w["commodity_code"].astype(str)
+    nodes = w[codes.str.count(r"\.") >= 1]
+    pick = [nodes[nodes["commodity_code"].astype(str) == c].iloc[0] for c in curated
+            if (nodes["commodity_code"].astype(str) == c).any()]
+    rest = [r for _, r in nodes.head(40).iterrows() if str(r["commodity_code"]) not in curated]
+    shock_nodes = [{"code": str(r["commodity_code"]),
+                    "name": curated.get(str(r["commodity_code"]), str(r["commodity"]).title()),
+                    "weight": round(float(r["weight_pct"]), 3)} for r in pick + rest]
     return {
         "regions": regions,
         "sectors": sectors,

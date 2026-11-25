@@ -9,7 +9,7 @@ class ForecastRequest(BaseModel):
     d: int = Field(1, ge=0, le=2)
     q: int = Field(1, ge=0, le=3)
     P: int = Field(1, ge=0, le=2)
-    D: int = Field(0, ge=0, le=1)
+    D: int = Field(1, ge=0, le=1)
     Q: int = Field(0, ge=0, le=2)
     trend: str = Field("add", pattern="^(add|none)$")
     seasonal: str = Field("add", pattern="^(add|none)$")
@@ -18,6 +18,11 @@ class ForecastRequest(BaseModel):
     shock_node: str | None = None
     shock_pct: float = Field(0.0, ge=-60, le=60)
     shock_start: int = Field(1, ge=1, le=36)
+
+
+class NowcastWhatIf(BaseModel):
+    region: str
+    infl: float = Field(..., ge=-10, le=30)
 
 
 class ThresholdRequest(BaseModel):

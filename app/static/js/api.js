@@ -26,6 +26,23 @@ function qs(params = {}) {
   return s ? `?${s}` : "";
 }
 
+// fetch() rejects with a bare TypeError ("Failed to fetch") when the server is unreachable,
+// e.g. while `uvicorn --reload` restarts. Retry those briefly; HTTP errors and aborts are not retried.
+const RETRY_DELAYS = [400, 1200, 3000];
+async function fetchWithRetry(url, opts = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(url, opts);
+    } catch (err) {
+      if (err.name === "AbortError" || opts.signal?.aborted) throw err;
+      if (attempt >= RETRY_DELAYS.length) {
+        throw new Error("Can't reach the dashboard server. Check that it is still running, then retry.");
+      }
+      await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
+    }
+  }
+}
+
 export async function get(path, params = {}, { fresh = false } = {}) {
   const url = `/api${path}${qs(params)}`;
   const t0 = performance.now();
@@ -40,7 +57,7 @@ export async function get(path, params = {}, { fresh = false } = {}) {
   inflight.set(url, ctrl);
   const p = (async () => {
     try {
-      const res = await fetch(url, { signal: ctrl.signal });
+      const res = await fetchWithRetry(url, { signal: ctrl.signal });
       if (!res.ok) throw new Error(`${path} → ${res.status}`);
       const body = await res.json();
       cache.set(url, body);
@@ -57,7 +74,7 @@ export async function get(path, params = {}, { fresh = false } = {}) {
 
 export async function post(path, payload) {
   const t0 = performance.now();
-  const res = await fetch(`/api${path}`, {
+  const res = await fetchWithRetry(`/api${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

@@ -5,6 +5,7 @@ import { lastMeta } from "./api.js";
 import { PHMap } from "./map3d.js";
 import { C, $, $$, monthLabel, csvDownload } from "./panels/common.js";
 import { renderOverview } from "./panels/overview.js";
+import { renderStory } from "./panels/story.js";
 import { run as runForecast, initForecast } from "./panels/forecast.js";
 import { renderDrivers } from "./panels/drivers.js";
 import { renderRisk, initRisk } from "./panels/risk.js";
@@ -16,12 +17,18 @@ import * as motion from "./motion.js";
 let meta = null;
 let map = null;
 let landingMap = null;
-let activeTab = "overview";
+let activeTab = "story";
+let storyEnd = null;
 let playTimer = null;
 let monthList = [];
 let lastRegion = null;
 
 const RENDERERS = {
+  story: async (s) => {
+    if (storyEnd === s.end && rendered.has("story")) return; // story reads the end month only
+    storyEnd = s.end;
+    await renderStory(s);
+  },
   overview: renderOverview,
   forecast: (s) => runForecast(s),
   drivers: renderDrivers,
@@ -72,7 +79,7 @@ async function bootstrap() {
   meta = await api.get("/meta");
   fillSelects();
   initForecast(meta);
-  initRisk();
+  initRisk(meta);
   bindRail();
   bindTabs();
   bindTools();
@@ -515,14 +522,19 @@ function renderKpis(k) {
   const delta = k.prev == null ? null : k.headline - k.prev;
   const coreMeta = k.region && k.region !== "PHILIPPINES"
     ? "national figure (regional core not published)"
-    : "excludes volatile items";
+    : "steady underlying trend";
+  const regional = k.region && k.region !== "PHILIPPINES";
+  const range = regional && k.nowcast_lo80 != null ? `likely ${k.nowcast_lo80.toFixed(1)}–${k.nowcast_hi80.toFixed(1)}%` : null;
+  const ab = k.regions_above_next;
   const cards = [
-    ["Inflation (year-on-year)", api.pct(k.headline), delta == null ? "—" : `${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pp vs prior`, delta > 0 ? "up" : "down"],
-    ["Consumer price index", api.money(k.cpi), "2018 = 100", ""],
-    ["Core inflation", api.pct(k.core), coreMeta, ""],
-    ["Next-month estimate", api.pct(k.nowcast_next),
-      k.region && k.region !== "PHILIPPINES" ? "regional model" : "national model, published forecast", ""],
-    ["Chance above 4%", api.pct((k.breach_probability || 0) * 100), "risk estimate, test window", k.breach_probability > 0.5 ? "up" : ""],
+    ["Inflation now (vs a year ago)", api.pct(k.headline), delta == null ? "—" : `${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pts vs last month`, delta > 0 ? "up" : "down"],
+    ["Price index (2018 = 100)", api.money(k.cpi), "the cost of a typical basket", ""],
+    ["Inflation without food and fuel", api.pct(k.core), coreMeta, ""],
+    ["Likely next month", api.pct(k.nowcast_next),
+      regional ? (range || "this month carried forward") : "national forecast (SARIMA)", ""],
+    regional
+      ? ["Chance above 4% next month", k.breach_probability == null ? "—" : api.pct(k.breach_probability * 100), "model estimate", k.breach_probability > 0.5 ? "up" : ""]
+      : ["Regions above 4% next month", ab?.count == null ? "—" : `${ab.count} of ${ab.total}`, "model estimate by region", ab?.count > 0 ? "up" : ""],
   ];
   const prevV = [...document.querySelectorAll("#kpis .v")].map((e) => e.textContent);
   $("#kpis").innerHTML = cards.map(([label, value, meta2, cls]) =>
@@ -570,14 +582,25 @@ function drawRank(rows) {
 
 async function renderActive(force = false) {
   if (!force && rendered.has(activeTab)) return;
+  const tab = activeTab;
+  const panel = document.getElementById(`panel-${tab}`);
+  panel?.querySelectorAll(":scope > .load-error").forEach((el) => el.remove()); // don't stack banners across retries
   try {
-    await RENDERERS[activeTab](state);
-    rendered.add(activeTab);
+    await RENDERERS[tab](state);
+    rendered.add(tab);
   } catch (err) {
     console.error(err);
-    const panel = document.getElementById(`panel-${activeTab}`);
-    if (panel) panel.insertAdjacentHTML("afterbegin",
-      `<div class="empty">Panel failed to load: ${err.message}</div>`);
+    if (!panel) return;
+    const banner = document.createElement("div");
+    banner.className = "empty load-error";
+    banner.textContent = `Panel failed to load: ${err.message} `;
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.className = "btn";
+    retry.textContent = "Retry";
+    retry.addEventListener("click", () => { if (activeTab === tab) renderActive(true); });
+    banner.append(retry);
+    panel.prepend(banner);
   }
 }
 
@@ -593,6 +616,7 @@ function onState() {
   if ($("#metricSelect").value !== state.metric) $("#metricSelect").value = state.metric;
 
   // Sector clicks only affect the drivers highlight, not the map, KPIs or charts.
+  if (state.selectedPoint && state.selectedPoint.region !== state.region) state.selectedPoint = null;
   const keys = ["region", "start", "end", "focusDate", "metric", "sector"];
   const changed = !lastState || keys.some((k) => state[k] !== lastState[k]);
   const sectorOnly = lastState

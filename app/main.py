@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.db import connect
-from app.routers import forecast, meta, news, panels
+from app.routers import forecast, meta, news, panels, story
 
 STATIC = Path(__file__).parent / "static"
 
@@ -21,6 +21,7 @@ app.include_router(meta.router, prefix="/api", tags=["meta"])
 app.include_router(panels.router, prefix="/api", tags=["panels"])
 app.include_router(forecast.router, prefix="/api", tags=["models"])
 app.include_router(news.router, prefix="/api", tags=["news"])
+app.include_router(story.router, prefix="/api", tags=["story"])
 
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 

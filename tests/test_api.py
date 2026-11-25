@@ -94,9 +94,9 @@ def test_forecast_ets_and_shock():
 def test_local_shap():
     body = get("/api/nowcast/shap/local",
                region="National Capital Region (NCR)", date="2026-09-01")
-    assert len(body["data"]) == 12
+    assert len(body["data"]) == 13
     assert body["base"] is not None
-    total = body["base"] + sum(r["contribution"] for r in body["data"])
+    total = body["start"] + body["base"] + sum(r["contribution"] for r in body["data"])
     assert abs(total - body["prediction"]) < 0.01
 
 
@@ -106,13 +106,13 @@ def test_diagnostics():
     th = client.post("/api/classifier/threshold", json={"threshold": 0.5}).json()["data"]
     assert 0 <= th["precision"] <= 1
     g = get("/api/nowcast/shap/global")["data"]
-    assert len(g) == 12
+    assert len(g) == 13
     b = get("/api/nowcast/shap/beeswarm", sample=40)["data"]
     assert 0 < len(b) < 1000
     p = get("/api/structure/pca")["data"]
     assert len(p) == 18
     res = get("/api/nowcast/residuals")["data"]
-    assert len(res) > 50
+    assert len(res) == 198 and {"geolocation", "actual", "pred", "residual"} <= set(res[0])
 
 
 def test_sql_preview_and_export():

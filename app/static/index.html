@@ -121,15 +121,21 @@
     </section>
 
     <nav class="tabs" role="tablist" aria-label="Dashboard sections">
-      <button class="tab" role="tab" aria-selected="true" data-tab="overview">Overview</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="drivers">Drivers</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="forecast">Forecast and scenarios</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="risk">Above-target risk</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="structure">Regions</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="data">Data and SQL</button>
+      <button class="tab" role="tab" aria-selected="true" data-tab="story">The story</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="overview">Trends</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="drivers">What is driving it</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="forecast">What happens next</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="risk">Risk by region</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="structure">Similar regions</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="data">Data and method</button>
     </nav>
 
-    <section class="panel" id="panel-overview" role="tabpanel">
+    <section class="panel" id="panel-story" role="tabpanel">
+      <p class="story-intro">Philippine inflation in six short chapters, in plain language. Scroll down, or use the tabs for the detailed charts. Click any region to focus the whole page on it.</p>
+      <div id="storyRoot"><div class="empty">Loading the story…</div></div>
+    </section>
+
+    <section class="panel" id="panel-overview" role="tabpanel" hidden>
       <div class="grid2">
         <div class="card">
           <div class="card-head"><h3>Overall vs core inflation</h3>
@@ -241,8 +247,30 @@
             <select id="fcNode"><option value="">None</option></select></div>
           <button class="btn primary" id="fcRun">Fit forecast</button>
         </div>
+        <div class="presets" id="fcPresets"><span class="hint">Quick what-ifs:</span>
+          <button class="btn" data-preset="07.2.2:20">Fuel +20%</button>
+          <button class="btn" data-preset="01.1.1.12:20">Rice +20%</button>
+          <button class="btn" data-preset="04.5.1:15">Electricity +15%</button>
+          <button class="btn" data-preset="01.1:-10">Food prices −10%</button>
+        </div>
+        <details class="adv"><summary>Advanced model settings</summary>
+          <div class="controls">
+            <div><label for="fcP">AR order p</label><input id="fcP" type="number" min="0" max="3" value="1"></div>
+            <div><label for="fcD">Differencing d</label><input id="fcD" type="number" min="0" max="2" value="1"></div>
+            <div><label for="fcQ">MA order q</label><input id="fcQ" type="number" min="0" max="3" value="1"></div>
+            <div><label for="fcSP">Seasonal P</label><input id="fcSP" type="number" min="0" max="2" value="1"></div>
+            <div><label for="fcSD">Seasonal D</label><input id="fcSD" type="number" min="0" max="1" value="1"></div>
+            <div><label for="fcSQ">Seasonal Q</label><input id="fcSQ" type="number" min="0" max="2" value="0"></div>
+            <div><label for="fcTrend">ETS trend</label><select id="fcTrend"><option value="add">Additive</option><option value="none">None</option></select></div>
+            <div><label for="fcSeasonal">ETS seasonality</label><select id="fcSeasonal"><option value="add">Additive</option><option value="none">None</option></select></div>
+            <div><label for="fcDamped">Damped trend</label><input id="fcDamped" type="checkbox" checked></div>
+            <button class="btn" id="fcAdvReset" type="button">Reset to defaults</button>
+          </div>
+          <p class="caption">For analysts: SARIMA(p,d,q)(P,D,Q,12) on log CPI and an additive ETS model. Changing these re-fits the model live (about a second). The defaults are the settings validated in the backtest below.</p>
+        </details>
         <div id="fanChart" class="plot tall"></div>
         <div class="caption" id="fcMeta">Shaded bands are likely ranges (80% and 95%). Price changes use the 2018 basket-weight approximation.</div>
+        <p class="howto"><b>How to read this:</b> the dark line is the best guess; the bands show where inflation should land 80% and 95% of the time. The bands widen the further ahead we look. Pick a quick what-if above to see how a price jump shifts the whole path (dotted grey = no change).</p>
         <div class="sql-drawer" id="fcSql"><div class="meta">POST /api/forecast, live fit, LRU-cached</div>
           <pre>POST /api/forecast
 { "model": "sarima|ets|both", "horizon": 6..36,
@@ -266,16 +294,32 @@
     </section>
 
     <section class="panel" id="panel-risk" role="tabpanel" hidden>
+      <div class="card" id="whatifCard">
+        <div class="card-head"><h3>What if this month were different? (one region)</h3></div>
+        <div class="controls">
+          <div><label for="wiRegion">Region</label><select id="wiRegion"></select></div>
+          <div><label for="wiRate">This month's inflation <span id="wiRateVal">0.0</span>%</label>
+            <input id="wiRate" type="range" min="-2" max="16" step="0.1" value="5"></div>
+          <button class="btn" id="wiReset" type="button">Reset to actual</button>
+        </div>
+        <div class="kpis" id="wiKpis"></div>
+        <div class="caption" id="wiNote"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Is the model better than a simple guess?</h3></div>
+        <div class="tablewrap"><table class="data" id="compareTable"></table></div>
+        <div class="caption" id="compareNote"></div>
+      </div>
       <div class="grid2">
         <div class="card">
-          <div class="card-head"><h3>Above-target risk model</h3>
+          <div class="card-head"><h3>How well does the risk model catch rises?</h3>
             <div class="card-tools"><button class="tool" id="rocSqlBtn">View SQL</button></div>
           </div>
           <div id="rocChart" class="plot"></div>
-          <div class="caption">Chance of inflation above 4% next month. AUC (ranking) 0.940, AP (precision) 0.979, 198 test cases. Cut-off-dependent scores are inflated by the 2026 surge.</div>
+          <div class="caption" id="rocCaption"></div>
         </div>
         <div class="card">
-          <div class="card-head"><h3>Cut-off explorer</h3></div>
+          <div class="card-head"><h3>Choose how cautious the alarm is</h3></div>
           <div class="controls">
             <div><label for="thrSlider">Cut-off probability <span id="thrVal">0.50</span></label>
               <input id="thrSlider" type="range" min="0.05" max="0.95" step="0.01" value="0.5"></div>
@@ -288,11 +332,11 @@
       </div>
       <div class="grid2">
         <div class="card">
-          <div class="card-head"><h3>What drives the model</h3></div>
+          <div class="card-head"><h3>What the model pays attention to</h3></div>
           <div id="shapBar" class="plot"></div>
         </div>
         <div class="card">
-          <div class="card-head"><h3>What drives each prediction</h3></div>
+          <div class="card-head"><h3>What pushed each prediction (click a dot)</h3></div>
           <div id="shapSwarm" class="plot"></div>
         </div>
       </div>
@@ -300,14 +344,13 @@
         <div class="card-head"><h3>Why this prediction</h3>
           <span class="hint" id="shapLocalLabel">click a point above</span></div>
         <div id="shapLocal" class="plot tall"></div>
-        <div class="caption">Step-by-step contributions for one region-month; the bars add up to the model estimate.</div>
+        <div class="caption">Read left to right: start from this month's rate, add the typical drift, then each factor's push (red raises, green lowers) to reach the model's estimate for next month.</div>
       </div>
       <div class="card">
-        <div class="card-head"><h3>SARIMA forecast errors</h3>
-          <div class="card-tools"><button class="tool" id="resSqlBtn">View SQL</button></div>
+        <div class="card-head"><h3>Where the one-month-ahead guess missed (click a dot)</h3>
         </div>
-        <div id="residChart" class="plot"></div>
-        <div class="caption">Difference between actual and fitted values for the SARIMA model; grey lines mark ±2 standard errors.</div>
+        <div id="residChart" class="plot tall"></div>
+        <div class="caption" id="residCaption"></div>
       </div>
     </section>
 

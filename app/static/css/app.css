@@ -282,3 +282,28 @@ table.data td.name { font-family: var(--font-body); font-size: 12px; }
   .hero-grid, .grid2, .grid3 { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- story tab ---- */
+.story-intro { color: var(--muted); font-size: 14px; margin: 4px 0 14px; max-width: 70ch; }
+.chapter { display: grid; grid-template-columns: minmax(260px, 5fr) 7fr; gap: 20px; background: var(--card);
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; align-items: start; }
+.chapter .kicker { margin: 0 0 4px; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); font-weight: 600; }
+.chapter h3 { font-family: var(--font-display); font-size: 22px; line-height: 1.2; margin: 0 0 8px; }
+.chapter .big { font-family: var(--font-display); font-size: 40px; font-weight: 600; line-height: 1.05; margin: 4px 0 10px; color: var(--deep); }
+.chapter ul { margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 1.55; }
+.chapter li { margin-bottom: 6px; }
+.chapter-viz .caption { padding: 4px 4px 0; }
+.chapter-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.story-foot { margin-bottom: 14px; }
+.glossary { margin: 0; padding: 10px 14px 14px; font-size: 13px; }
+.glossary dt { font-weight: 600; margin-top: 8px; } .glossary dd { margin: 2px 0 0; color: var(--muted); }
+.newslist { margin: 0; padding: 10px 14px 14px 30px; font-size: 13.5px; }
+.newslist li { margin-bottom: 6px; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px 0; }
+.adv { padding: 8px 14px 4px; }
+.adv summary { cursor: pointer; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.adv .controls { padding-left: 0; }
+.adv .controls input[type=number] { width: 64px; }
+.howto { font-size: 12.5px; color: var(--ink); background: var(--teal-soft); border-radius: 6px; margin: 4px 14px 12px; padding: 8px 12px; }
+#panel-story[hidden] { display: none; }
+@media (max-width: 860px) { .chapter { grid-template-columns: 1fr; padding: 16px; } .chapter .big { font-size: 32px; } }

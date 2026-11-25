@@ -1,5 +1,5 @@
 {
- "trained_at": "2026-11-05T15:49:55",
+ "trained_at": "2026-11-24T12:41:43",
  "series_start": "2018-01-01",
  "series_end": "2026-10-01",
  "n_obs": 106,
@@ -19,25 +19,26 @@
   }
  ],
  "gbm": {
-  "MAE": 1.7948873082060677,
-  "RMSE": 2.3261117965510536,
-  "R2": 0.277865992618361
+  "MAE": 1.2828,
+  "RMSE": 1.6617,
+  "R2": 0.6315
  },
  "classifier": {
-  "AUC": 0.9404950615778562,
-  "average_precision": 0.978763342086657,
-  "accuracy": 0.7575757575757576,
+  "AUC": 0.9684,
+  "average_precision": 0.9892,
+  "accuracy": 0.904,
   "precision": 1.0,
-  "recall": 0.6546762589928058,
-  "positive_rate": 0.702020202020202,
+  "recall": 0.8633,
+  "positive_rate": 0.702,
   "n_test": 198
  },
- "shap_base_value": 3.8994152803985673,
+ "shap_base_value": -0.0258,
  "pca_explained": [
   0.2994,
   0.204
  ],
  "features": [
+  "infl",
   "lag1",
   "lag2",
   "lag3",
@@ -85,5 +86,379 @@
    "MAPE": 71.6898,
    "bias": 4.0984
   }
- ]
+ ],
+ "nowcast": {
+  "spec": "GradientBoostingRegressor on the month-to-month change, features incl. current rate",
+  "primary_window": "2025-11..2026-09",
+  "folds": [
+   {
+    "origin": "2022-10-01",
+    "window": "2022-11..2023-10",
+    "n": 216,
+    "mean_actual": 6.1722,
+    "regression": {
+     "Persistence (this month carried forward)": {
+      "MAE": 0.744,
+      "RMSE": 0.8962
+     },
+     "3-month average": {
+      "MAE": 1.0434,
+      "RMSE": 1.2348
+     },
+     "Training-period mean": {
+      "MAE": 2.5919,
+      "RMSE": 3.134
+     },
+     "Boosted trees, level target, no current rate (v1)": {
+      "MAE": 1.317,
+      "RMSE": 1.5721
+     },
+     "Boosted trees, change target + current rate (deployed)": {
+      "MAE": 0.9662,
+      "RMSE": 1.1611
+     }
+    },
+    "classifier": {
+     "Persistence rule (this month > 4%)": {
+      "n": 216,
+      "positive_rate": 0.8657,
+      "accuracy": 0.8843,
+      "precision": 0.9175,
+      "recall": 0.9519,
+      "AUC": 0.9365,
+      "AP": 0.9897
+     },
+     "Boosted trees classifier (deployed)": {
+      "n": 216,
+      "positive_rate": 0.8657,
+      "accuracy": 0.8843,
+      "precision": 0.8932,
+      "recall": 0.984,
+      "AUC": 0.8888,
+      "AP": 0.9778
+     }
+    },
+    "shrinkage_mae": {
+     "0.0": 0.744,
+     "0.25": 0.7864,
+     "0.5": 0.8358,
+     "0.75": 0.8971,
+     "1.0": 0.9662
+    }
+   },
+   {
+    "origin": "2023-10-01",
+    "window": "2023-11..2024-10",
+    "n": 216,
+    "mean_actual": 3.462,
+    "regression": {
+     "Persistence (this month carried forward)": {
+      "MAE": 0.6694,
+      "RMSE": 0.8574
+     },
+     "3-month average": {
+      "MAE": 0.8525,
+      "RMSE": 1.1015
+     },
+     "Training-period mean": {
+      "MAE": 1.094,
+      "RMSE": 1.3436
+     },
+     "Boosted trees, level target, no current rate (v1)": {
+      "MAE": 0.858,
+      "RMSE": 1.1213
+     },
+     "Boosted trees, change target + current rate (deployed)": {
+      "MAE": 0.717,
+      "RMSE": 0.9577
+     }
+    },
+    "classifier": {
+     "Persistence rule (this month > 4%)": {
+      "n": 216,
+      "positive_rate": 0.3519,
+      "accuracy": 0.8102,
+      "precision": 0.7011,
+      "recall": 0.8026,
+      "AUC": 0.8913,
+      "AP": 0.7507
+     },
+     "Boosted trees classifier (deployed)": {
+      "n": 216,
+      "positive_rate": 0.3519,
+      "accuracy": 0.7407,
+      "precision": 0.5926,
+      "recall": 0.8421,
+      "AUC": 0.8389,
+      "AP": 0.6944
+     }
+    },
+    "shrinkage_mae": {
+     "0.0": 0.6694,
+     "0.25": 0.6704,
+     "0.5": 0.6773,
+     "0.75": 0.6915,
+     "1.0": 0.717
+    }
+   },
+   {
+    "origin": "2024-10-01",
+    "window": "2024-11..2025-10",
+    "n": 216,
+    "mean_actual": 1.3569,
+    "regression": {
+     "Persistence (this month carried forward)": {
+      "MAE": 0.4708,
+      "RMSE": 0.6088
+     },
+     "3-month average": {
+      "MAE": 0.609,
+      "RMSE": 0.7896
+     },
+     "Training-period mean": {
+      "MAE": 2.7115,
+      "RMSE": 2.9821
+     },
+     "Boosted trees, level target, no current rate (v1)": {
+      "MAE": 1.1696,
+      "RMSE": 1.4288
+     },
+     "Boosted trees, change target + current rate (deployed)": {
+      "MAE": 0.6454,
+      "RMSE": 0.8079
+     }
+    },
+    "classifier": {
+     "Persistence rule (this month > 4%)": {
+      "n": 216,
+      "positive_rate": 0.0185,
+      "accuracy": 0.9722,
+      "precision": 0.25,
+      "recall": 0.25,
+      "AUC": 0.9605,
+      "AP": 0.2781
+     },
+     "Boosted trees classifier (deployed)": {
+      "n": 216,
+      "positive_rate": 0.0185,
+      "accuracy": 0.963,
+      "precision": 0.1667,
+      "recall": 0.25,
+      "AUC": 0.9375,
+      "AP": 0.2936
+     }
+    },
+    "shrinkage_mae": {
+     "0.0": 0.4708,
+     "0.25": 0.4988,
+     "0.5": 0.5387,
+     "0.75": 0.5893,
+     "1.0": 0.6454
+    }
+   },
+   {
+    "origin": "2025-10-01",
+    "window": "2025-11..2026-09",
+    "n": 198,
+    "mean_actual": 5.646,
+    "regression": {
+     "Persistence (this month carried forward)": {
+      "MAE": 0.9394,
+      "RMSE": 1.3503
+     },
+     "3-month average": {
+      "MAE": 1.4601,
+      "RMSE": 1.9827
+     },
+     "Training-period mean": {
+      "MAE": 2.9612,
+      "RMSE": 3.3828
+     },
+     "Boosted trees, level target, no current rate (v1)": {
+      "MAE": 1.7392,
+      "RMSE": 2.2756
+     },
+     "Boosted trees, change target + current rate (deployed)": {
+      "MAE": 1.2828,
+      "RMSE": 1.6617
+     }
+    },
+    "classifier": {
+     "Persistence rule (this month > 4%)": {
+      "n": 198,
+      "positive_rate": 0.702,
+      "accuracy": 0.9091,
+      "precision": 1.0,
+      "recall": 0.8705,
+      "AUC": 0.9898,
+      "AP": 0.9958
+     },
+     "Boosted trees classifier (deployed)": {
+      "n": 198,
+      "positive_rate": 0.702,
+      "accuracy": 0.904,
+      "precision": 1.0,
+      "recall": 0.8633,
+      "AUC": 0.9684,
+      "AP": 0.9892
+     }
+    },
+    "shrinkage_mae": {
+     "0.0": 0.9394,
+     "0.25": 0.9849,
+     "0.5": 1.0622,
+     "0.75": 1.1619,
+     "1.0": 1.2828
+    }
+   }
+  ],
+  "interval_production": {
+   "q025": -1.6875,
+   "q10": -1.1,
+   "q90": 1.0,
+   "q975": 2.275
+  },
+  "interval": {
+   "q025": -1.7,
+   "q10": -1.2,
+   "q90": 0.8,
+   "q975": 1.2,
+   "coverage80_primary": 0.6515,
+   "coverage95_primary": 0.7828,
+   "calibrated_on": "windows ending 2022-10, 2023-10, 2024-10"
+  }
+ },
+ "national_rolling": {
+  "folds": [
+   {
+    "origin": "2022-10-01",
+    "window": "2022-11..2023-10",
+    "models": {
+     "SARIMA": {
+      "MAE": 1.1068,
+      "RMSE": 1.3733,
+      "coverage80": 0.9167,
+      "coverage95": 1.0,
+      "width95": 5.9732
+     },
+     "Holt-Winters": {
+      "MAE": 0.5622,
+      "RMSE": 0.8423,
+      "coverage80": 1.0,
+      "coverage95": 1.0,
+      "width95": 7.3161
+     },
+     "Naive (last year-on-year rate held)": {
+      "MAE": 1.4336,
+      "RMSE": 1.7167
+     }
+    }
+   },
+   {
+    "origin": "2023-10-01",
+    "window": "2023-11..2024-10",
+    "models": {
+     "SARIMA": {
+      "MAE": 1.0224,
+      "RMSE": 1.3427,
+      "coverage80": 1.0,
+      "coverage95": 1.0,
+      "width95": 7.2775
+     },
+     "Holt-Winters": {
+      "MAE": 1.4719,
+      "RMSE": 1.6964,
+      "coverage80": 1.0,
+      "coverage95": 1.0,
+      "width95": 7.6205
+     },
+     "Naive (last year-on-year rate held)": {
+      "MAE": 1.4797,
+      "RMSE": 1.6432
+     }
+    }
+   },
+   {
+    "origin": "2024-10-01",
+    "window": "2024-11..2025-10",
+    "models": {
+     "SARIMA": {
+      "MAE": 1.1565,
+      "RMSE": 1.3011,
+      "coverage80": 1.0,
+      "coverage95": 1.0,
+      "width95": 6.9518
+     },
+     "Holt-Winters": {
+      "MAE": 0.8678,
+      "RMSE": 0.9309,
+      "coverage80": 0.9167,
+      "coverage95": 1.0,
+      "width95": 6.6178
+     },
+     "Naive (last year-on-year rate held)": {
+      "MAE": 0.6777,
+      "RMSE": 0.7411
+     }
+    }
+   },
+   {
+    "origin": "2025-10-01",
+    "window": "2025-11..2026-10",
+    "models": {
+     "SARIMA": {
+      "MAE": 3.0308,
+      "RMSE": 3.6623,
+      "coverage80": 0.3333,
+      "coverage95": 0.4167,
+      "width95": 5.5386
+     },
+     "Holt-Winters": {
+      "MAE": 4.0863,
+      "RMSE": 4.7937,
+      "coverage80": 0.0833,
+      "coverage95": 0.3333,
+      "width95": 6.2419
+     },
+     "Naive (last year-on-year rate held)": {
+      "MAE": 3.3264,
+      "RMSE": 4.0281
+     }
+    }
+   }
+  ],
+  "mean": {
+   "SARIMA": {
+    "coverage80": 0.8125,
+    "RMSE": 1.9198,
+    "coverage95": 0.8542,
+    "MAE": 1.5791,
+    "width95": 6.4353
+   },
+   "Holt-Winters": {
+    "coverage80": 0.75,
+    "RMSE": 2.0658,
+    "coverage95": 0.8333,
+    "MAE": 1.7471,
+    "width95": 6.9491
+   },
+   "Naive (last year-on-year rate held)": {
+    "RMSE": 2.0323,
+    "MAE": 1.7294
+   }
+  }
+ },
+ "headline_nowcast": {
+  "MAE": 0.9394,
+  "RMSE": 1.3503,
+  "why": "carry-forward beat every boosted-trees variant in all four windows"
+ },
+ "classifier_baseline": {
+  "AUC": 0.9898,
+  "AP": 0.9958,
+  "accuracy": 0.9091,
+  "precision": 1.0,
+  "recall": 0.8705,
+  "name": "Persistence rule (this month > 4%)"
+ }
 }

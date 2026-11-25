@@ -11,6 +11,9 @@ class Settings:
     max_rows: int = 1000
     fit_concurrency: int = 2
     data_vintage: str = "2026-11-05"
+    # Forecast models are fitted on the 2018-base era only (n = 106 months), matching the
+    # paper; fitting back to 1958 lets the 1984 hyperinflation inflate every interval.
+    fit_start: str = "2018-01-01"
 
     @property
     def warehouse(self) -> Path:

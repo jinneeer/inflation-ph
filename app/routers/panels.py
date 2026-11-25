@@ -24,15 +24,17 @@ def kpis(end: str = Query("2026-10-01"), region: str | None = Query(None)):
         nat = db.query("kpis", [end]).rows
         national = nat[0] if nat else {}
         row["core"] = national.get("core")
-        clf = models.CLF[models.CLF["geolocation"] == region]
-        breach = float(clf.sort_values("date").iloc[-1]["proba"]) if not clf.empty else None
-        nc = db.query("nowcast_region", [region, end]).rows
-        nowcast = float(nc[0]["target_next"]) if nc else None
+        nc = models.latest_nowcast(region, end)
+        breach = nc["proba"] if nc else None
+        nowcast = nc["pred_next"] if nc else None
+        extra = {"nowcast_lo80": nc["lo80"], "nowcast_hi80": nc["hi80"]} if nc else {}
         panel = "kpis_region"
     else:
         res = db.query("kpis", [end])
         row = res.rows[0] if res.rows else {}
-        breach = float(models.CLF["proba"].mean()) if not models.CLF.empty else None
+        # the breach model is regional: report how many regions it expects above 4%, not a made-up national odds
+        breach = None
+        extra = {"regions_above_next": models.regions_expected_above(end)}
         fc = models.FORECAST[models.FORECAST["model"] == "SARIMA"]
         nowcast = float(fc.sort_values("date").iloc[0]["inflation"]) if not fc.empty else None
         panel = "kpis"
@@ -42,6 +44,7 @@ def kpis(end: str = Query("2026-10-01"), region: str | None = Query(None)):
         "nowcast_next": nowcast,
         "breach_probability": breach,
         "bsp_band": [2.0, 4.0],
+        **extra,
     })
     meta = res.meta()
     meta["panel_id"] = panel

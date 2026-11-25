@@ -3,9 +3,9 @@ from __future__ import annotations
 import dataclasses
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from app.schemas import ForecastRequest, ThresholdRequest
+from app.schemas import ForecastRequest, NowcastWhatIf, ThresholdRequest
 from app.services import forecast as svc
 from app.services import models
 
@@ -43,6 +43,7 @@ def curves():
         "data": {
             "roc": models.ROC.to_dict("records"),
             "pr": models.PR.to_dict("records"),
+            "baseline": models.METRICS.get("classifier_baseline"),
             "base_rate": models.METRICS.get("classifier", {}).get("positive_rate"),
             "auc": models.METRICS.get("classifier", {}).get("AUC"),
             "ap": models.METRICS.get("classifier", {}).get("average_precision"),
@@ -84,27 +85,44 @@ def shap_beeswarm(sample: int = 60):
 def shap_local(region: str, date: str):
     rows = models.local_shap(region, date)
     base = models.METRICS.get("shap_base_value")
-    pred = round(base + sum(r["contribution"] for r in rows), 4) if rows and base is not None else None
-    return {"data": rows, "prediction": pred, "base": base,
+    now = next((r["value"] for r in rows if r["feature"] == "infl"), None)
+    # the model explains the *change* from this month: next = this month + base + contributions
+    pred = round(now + base + sum(r["contribution"] for r in rows), 4) \
+        if rows and base is not None and now is not None else None
+    return {"data": rows, "prediction": pred, "base": base, "start": now,
             "meta": {"panel_id": "shap_local", "row_count": len(rows), "cache": "artifact"}}
 
 
 @router.get("/nowcast/residuals")
-def residuals():
-    import numpy as np
-    from statsmodels.tsa.statespace.sarimax import SARIMAX
-    from app.services.forecast import national_cpi
+def residuals(region: str | None = None):
+    """Held-out regional misses (actual - carried-forward estimate), read from the stored artifact."""
+    df = models.NOWCAST_TEST
+    if df.empty:
+        return {"data": [], "meta": {"panel_id": "nowcast_residuals", "row_count": 0}}
+    if region and region != "PHILIPPINES":
+        df = df[df["geolocation"] == region]
+    rows = [{"date": str(r.date)[:10], "geolocation": r.geolocation,
+             "actual": round(float(r.actual), 2), "pred": round(float(r.pred), 2),
+             "model_pred": round(float(r.model_pred), 2), "residual": round(float(r.residual), 3)}
+            for r in df.itertuples()]
+    return {"data": rows, "meta": {"panel_id": "nowcast_residuals", "row_count": len(rows),
+                                   "cache": "artifact"}}
 
-    df = national_cpi()
-    fit = SARIMAX(np.log(df["cpi"].to_numpy()), order=(1, 1, 1),
-                  seasonal_order=(1, 1, 0, 12), enforce_stationarity=False,
-                  enforce_invertibility=False).fit(disp=False)
-    resid = np.asarray(fit.resid)[13:]
-    dates = df["date"].iloc[13:]
-    rows = [{"date": str(d)[:10], "residual": round(float(r), 4)}
-            for d, r in zip(dates, resid)]
-    return {"data": rows[-120:], "meta": {"panel_id": "nowcast_residuals",
-                                          "row_count": min(120, len(rows)), "cache": "computed"}}
+
+@router.get("/nowcast/latest")
+def nowcast_latest():
+    df = models.NOWCAST_LATEST
+    rows = df.assign(date=df["date"].astype(str).str[:10]).round(3).to_dict("records") if not df.empty else []
+    return {"data": rows, "meta": {"panel_id": "nowcast_latest", "row_count": len(rows), "cache": "artifact"}}
+
+
+@router.post("/nowcast/whatif")
+def nowcast_whatif(req: NowcastWhatIf):
+    from app.services.nowcast_model import nowcaster
+    res = nowcaster().what_if(req.region, req.infl)
+    if res is None:
+        raise HTTPException(status_code=404, detail=f"unknown region {req.region}")
+    return {"data": res, "meta": {"panel_id": "nowcast_whatif", "cache": "computed"}}
 
 
 @router.get("/model/metrics")
