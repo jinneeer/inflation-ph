@@ -1,0 +1,4 @@
+-r requirements.txt
+# only for retraining models (src/train.py) and running tests; the deployed app does not need these
+shap==0.46.0
+pytest
