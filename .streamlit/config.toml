@@ -1,0 +1,32 @@
+# Palette: navy #082F49 · teal #0E7490 · green #22C55E · sky #BAE6FD · ice #F0FDFF
+[theme]
+base = "light"
+font = "'Google Sans':https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap"
+headingFontWeights = [700, 600, 600, 600, 500, 500]
+primaryColor = "#0E7490"
+backgroundColor = "#F0FDFF"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#082F49"
+blueColor = "#0E7490"
+greenColor = "#22C55E"
+linkColor = "#0E7490"
+borderColor = "#BAE6FD"
+dataframeBorderColor = "#BAE6FD"
+dataframeHeaderBackgroundColor = "#E0F4FD"
+showWidgetBorder = true
+showSidebarBorder = false
+baseRadius = "12px"
+buttonRadius = "10px"
+metricValueFontWeight = 700
+chartCategoricalColors = ["#0E7490", "#22C55E", "#082F49", "#5FAFC6", "#E69F00", "#D55E00"]
+
+[theme.sidebar]
+backgroundColor = "#082F49"
+secondaryBackgroundColor = "#0F3D5C"
+textColor = "#F0FDFF"
+primaryColor = "#22C55E"
+borderColor = "#1D5677"
+linkColor = "#BAE6FD"
+
+[server]
+headless = true

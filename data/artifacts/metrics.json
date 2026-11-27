@@ -1,0 +1,36 @@
+{
+ "n_train": 1350,
+ "n_test": 270,
+ "threshold": 4.0,
+ "test_start": "2025-07-01",
+ "pca_var_explained": 0.6004908536197876,
+ "reg_mae_model": 0.8423877471089025,
+ "reg_mae_carry_forward": 0.8011111111111111,
+ "clf_auc": 0.9778571428571428,
+ "clf_ap": 0.985417067333834,
+ "clf_brier": 0.058380026973752545,
+ "test_positive_rate": 0.5185185185185185,
+ "clf_accuracy_carry_forward": 0.9259259259259259,
+ "clf_accuracy_model": 0.9333333333333333,
+ "latest_month": "2026-10-01",
+ "backtest": [
+  {
+   "origin": "2023-10",
+   "n": 216,
+   "mae_model": 0.6986986277194872,
+   "mae_carry_forward": 0.6694444444444444
+  },
+  {
+   "origin": "2024-10",
+   "n": 216,
+   "mae_model": 0.5888118217260762,
+   "mae_carry_forward": 0.47083333333333327
+  },
+  {
+   "origin": "2025-10",
+   "n": 198,
+   "mae_model": 0.9334695338327154,
+   "mae_carry_forward": 0.9393939393939394
+  }
+ ]
+}
